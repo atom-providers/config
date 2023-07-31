@@ -1,4 +1,4 @@
-module github.com/rogeecn/atom-addons/providers/config
+module github.com/atom-providers/config
 
 go 1.18
 
