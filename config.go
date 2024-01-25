@@ -18,31 +18,30 @@ func Load(file, app string) (*viper.Viper, error) {
 		v.SetConfigType("toml")
 		v.SetConfigName(app + ".toml")
 
+		paths := []string{}
 		// execute path
 		execPath, err := os.Executable()
 		if err == nil {
-			v.AddConfigPath(filepath.Dir(execPath))
+			paths = append(paths, filepath.Dir(execPath))
 		}
 
 		// home path
 		homePath, err := os.UserHomeDir()
 		if err == nil {
-			v.AddConfigPath(homePath)
-			v.AddConfigPath(homePath + "/" + app)
-			v.AddConfigPath(homePath + "/.config")
-			v.AddConfigPath(homePath + "/.config/" + app)
+			paths = append(paths, homePath, homePath+"/"+app, homePath+"/.config", homePath+"/.config/"+app)
 		}
+		paths = append(paths, "/etc", "/etc/"+app, "/usr/local/etc", "/usr/local/etc/"+app)
 
-		v.AddConfigPath("/etc")
-		v.AddConfigPath("/etc/" + app)
-		v.AddConfigPath("/usr/local/etc")
-		v.AddConfigPath("/usr/local/etc/" + app)
+		log.Println("try load config from paths:", paths)
+		for _, path := range paths {
+			v.AddConfigPath(path)
+		}
 	} else {
 		v.SetConfigFile(file)
 	}
 
 	err := v.ReadInConfig()
-	log.Println("config file:", v.ConfigFileUsed())
+	log.Println("use config file:", v.ConfigFileUsed())
 	if err != nil {
 		return nil, errors.Wrap(err, "config file read error")
 	}
